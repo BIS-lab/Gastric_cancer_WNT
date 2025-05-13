@@ -59,8 +59,8 @@ for text in heatmap.texts:
 plt.title(f"Copy Number Variation")
 
 
-plt.savefig("Figure_S6E.pdf", format='pdf', bbox_inches='tight')  # PDF로 저장
+plt.savefig("Figure_S6E.pdf", format='pdf', bbox_inches='tight')
 plt.show()
 
-plt.savefig("Figure_S6E.png", format='png', dpi=300, bbox_inches='tight')  # PNG로 저장 (dpi는 해상도)
+plt.savefig("Figure_S6E.png", format='png', dpi=300, bbox_inches='tight')
 plt.show()
