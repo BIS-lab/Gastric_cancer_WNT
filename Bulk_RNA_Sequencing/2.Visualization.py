@@ -121,5 +121,3 @@ for gene in ["ERBB2", "WNT7B"]:
 df_results = pd.DataFrame(results, columns=["Gene", "Sample", "Comparison Group", "Wilcoxon Statistic", "P-Value"])
 
 df_results.to_csv("00250508_Wilcoxon_Test_Results_greater.csv", index=False)
-
-print("Wilcoxon 검정 결과가 'Wilcoxon_Test_Results.csv' 파일로 저장되었습니다.")
