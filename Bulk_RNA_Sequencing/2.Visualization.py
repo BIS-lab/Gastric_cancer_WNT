@@ -10,7 +10,7 @@ from scipy.stats import wilcoxon
 ### Visualization
 
 # Load data
-normalized_expr_data = pd.read_csv("./00250508_tmm_normalized_counts_all_sample_final.csv",index_col="Unnamed: 0")
+normalized_expr_data = pd.read_csv("./tmm_normalized_counts_all_sample_final.csv",index_col="Unnamed: 0")
 metadata = pd.read_csv("./2_metadata.csv")
 tx2gene = pd.read_csv("./0_result/star_salmon/salmon_tx2gene.tsv", sep="\t",header=None)
 tx2gene.columns = ["Transcript_id","Gene_id","Gene_name"]
