@@ -1,13 +1,5 @@
 library(magrittr)
-library(ggplot2)
-library(pheatmap)
-library(biomaRt)
-library(dplyr)
-library(readr)
-library(tibble)
 library(edgeR)
-library(GSEABase)
-library(GSVAdata)
 library(tximport)
 
 tx2gene_data = as.data.frame(read.csv("./0_result/star_salmon/salmon_tx2gene.tsv",sep="\t"))
