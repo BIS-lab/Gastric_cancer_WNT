@@ -35,4 +35,4 @@ y <- scaleOffset(y, normMat)
 
 cpms <- edgeR::cpm(y, offset = y$offset, log = FALSE)
 
-write.csv(cpms, "00250508_tmm_normalized_counts_all_sample_final.csv")
+write.csv(cpms, "tmm_normalized_counts_all_sample_final.csv")
