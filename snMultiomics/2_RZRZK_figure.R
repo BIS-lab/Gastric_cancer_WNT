@@ -4,18 +4,19 @@ library(Signac)
 library(dplyr)
 library(ggplot2)
 library(EnsDb.Mmusculus.v79)
-library(EnsDb.Hsapiens.v86)
 library(RColorBrewer)
 library(clustree)
 library(hash)
-library(BSgenome.Hsapiens.UCSC.hg38)
 library(BSgenome.Mmusculus.UCSC.mm10)
 library(dittoSeq)
 library(motifmatchr)
 library(JASPAR2020)
 library(TFBSTools)
 library(chromVAR)
-library(httpgd)
+
+image.name = "/data/snMultiomics/RZ_RZK_object_v20250701.RData"
+load(image.name)
+rm(list = setdiff(ls(), "ready_to_visualize"))
 
 ##5-1 Customized Feature Plots
 plot_featureplot <- function(obj, gene){
@@ -99,9 +100,6 @@ plot_linkage_cl_genotype <- function(obj, assay, Target_gene){
     )
 } 
 
-image.name = "/hdds/hdd1/3_RZK_from_IMBA/3_RZK/0_FIN_scMultiome/RZ_RZK_object_v20220216.RData"
-load(image.name)
-rm(list = setdiff(ls(), "ready_to_visualize"))
 
 my_col <- c("0_Wild_type"='#8936EF',"0_Mutant"='#8936EF',"1_Wild_type"='#F2CA19',"1_Mutant"='#F2CA19',"2_Wild_type"='#FF00BD',"2_Mutant"='#FF00BD',"3_Wild_type"='#E11845',"3_Mutant"='#E11845',"4_Wild_type"='#0057E9',"4_Mutant"='#0057E9',"5_Wild_type"='#87E911',"5_Mutant"='#87E911',"6_Wild_type"="#018300","6_Mutant"="#018300")
 cluster_col <- c("Neck"='#8936EF',"Lgr5+"='#F2CA19',"SPEM"='#FF00BD',"Wnt7+"='#E11845',"Proliferating"='#0057E9',"Pre-Pit"='#87E911',"Pit"="#018300")
@@ -231,6 +229,7 @@ for (i in cl_list){
 
 ####fig 3H
 options(repr.plot.height = 8, repr.plot.width = 8)
+linkage_genome = BSgenome.Mmusculus.UCSC.mm10 
 p6 <- plot_linkage_cl_genotype(RZ.RZK, 'macs2', "Wnt7b")
 p6
 ggsave(file="/hdds/hdd1/3_RZK_from_IMBA/youngchul/pdf/fig_3_G_linkage_coverage_plot.pdf", width=8, height=8, dpi=300, plot=p6)

@@ -10,18 +10,15 @@ library(Signac)
 library(dplyr)
 library(ggplot2)
 library(EnsDb.Mmusculus.v79)
-library(EnsDb.Hsapiens.v86)
 library(RColorBrewer)
 library(clustree)
 library(hash)
-library(BSgenome.Hsapiens.UCSC.hg38)
 library(BSgenome.Mmusculus.UCSC.mm10)
 library(dittoSeq)
 library(motifmatchr)
 library(JASPAR2020)
 library(TFBSTools)
 library(chromVAR)
-library(httpgd)
 library(msigdbr)
 library(gprofiler2)
 
@@ -50,15 +47,15 @@ future.seed=TRUE
 set.seed(1234)
 ###Files
 #Wild_type
-wild.h5.file='/home/heetaklee/hdd/3_RZK/M12391_outs/Mouse_RZ_WEN/outs/filtered_feature_bc_matrix.h5'
-wild.fragment.file='/home/heetaklee/hdd/3_RZK/M12391_outs/Mouse_RZ_WEN/outs/atac_fragments.tsv.gz'
-wild.fragment.tbi.file='/home/heetaklee/hdd/3_RZK/M12391_outs/Mouse_RZ_WEN/outs/atac_fragments.tsv.gz.tbi'
-wild.meta.file='/home/heetaklee/hdd/3_RZK/M12391_outs/Mouse_RZ_WEN/outs/per_barcode_metrics.csv'
+wild.h5.file='/data/snMultiomics/Mouse_RZ_WEN/filtered_feature_bc_matrix.h5'
+wild.fragment.file='/data/snMultiomics/Mouse_RZ_WEN/atac_fragments.tsv.gz'
+wild.fragment.tbi.file='/data/snMultiomics/Mouse_RZ_WEN/atac_fragments.tsv.gz.tbi'
+wild.meta.file='/data/snMultiomics/Mouse_RZ_WEN/per_barcode_metrics.csv'
 #Mutant
-mutant.h5.file='/home/heetaklee/hdd/3_RZK/M12391_outs/Mouse_RZK_WEN/outs/filtered_feature_bc_matrix.h5'
-mutant.fragment.file='/home/heetaklee/hdd/3_RZK/M12391_outs/Mouse_RZK_WEN/outs/atac_fragments.tsv.gz'
-mutant.fragment.tbi.file='/home/heetaklee/hdd/3_RZK/M12391_outs/Mouse_RZK_WEN/outs/atac_fragments.tsv.gz.tbi'
-mutant.meta.file='/home/heetaklee/hdd/3_RZK/M12391_outs/Mouse_RZK_WEN/outs/per_barcode_metrics.csv'
+mutant.h5.file='/data/snMultiomics/Mouse_RZK_WEN/filtered_feature_bc_matrix.h5'
+mutant.fragment.file='/data/snMultiomics/Mouse_RZK_WEN/atac_fragments.tsv.gz'
+mutant.fragment.tbi.file='/data/snMultiomics/Mouse_RZK_WEN/atac_fragments.tsv.gz.tbi'
+mutant.meta.file='/data/snMultiomics/Mouse_RZK_WEN/per_barcode_metrics.csv'
 ###Arguments
 species <- "mouse"
 if (species=='mouse'){
@@ -142,7 +139,7 @@ subsetting_objects_QC <- function(obj) {
 ###Peak Calling by MACS2 tool_REQUIRED!!
 call_macs2_counts <- function(obj, species){
     # call peaks using MACS2
-    peaks <- CallPeaks(obj, macs2.path = "/home/heetaklee/anaconda3/envs/signac/bin/macs2")
+    peaks <- CallPeaks(obj,macs2.path = "/opt/conda/envs/RZK_project/bin/macs2",verbose = TRUE)
     # remove peaks on nonstandard chromosomes and in genomic blacklist regions
     if (species=='mouse'){
         blacklist = blacklist_mm10
@@ -151,6 +148,7 @@ call_macs2_counts <- function(obj, species){
     } else {print('check_species')}  
     peaks <- keepStandardChromosomes(peaks, pruning.mode = "coarse")    
     peaks <- subsetByOverlaps(x = peaks, ranges = blacklist, invert = TRUE)
+
     # quantify counts in each peak
     macs2_counts <- FeatureMatrix(
         fragments = Fragments(obj),
@@ -170,7 +168,7 @@ add_peak_to_object <- function(obj, species, frag_file){
 ### 4. Dimensional reduction, nomralization, and clustering
 ##4-1. Gene expression data processing 
 process_expression <- function(obj){
-    #obj <- SCTransform(obj) #Normalize, Scale data, FVF are included and normalized data is stored in [["SCT"]]@scale.data
+    obj <- SCTransform(obj) #Normalize, Scale data, FVF are included and normalized data is stored in [["SCT"]]@scale.data
     DefaultAssay(obj) <- "RNA"
     obj <- NormalizeData(obj)
     obj <- FindVariableFeatures(obj, selection.method="vst", nfeatures=2000)    
@@ -239,6 +237,9 @@ mutant <- add_genotype(mutant,'Mutant')
 #QC and subsetting
 wild <- subsetting_objects_QC(wild)
 mutant <- subsetting_objects_QC(mutant)
+
+Fragments(wild)
+Fragments(mutant)
 #MACS2 Peak calling
 wild <- add_peak_to_object(wild, species, wild.fragment.file)
 mutant <- add_peak_to_object(mutant, species, mutant.fragment.file)
@@ -254,9 +255,6 @@ wild_mutant.combined <- integrate_based_on_rna(wild, mutant)
 ready_to_visualize <- generate_umap_integrated(wild_mutant.combined)
 ready_to_visualize@meta.data$cl_genotype <- paste0(ready_to_visualize@meta.data$integrated_snn_res.0.3, "_", ready_to_visualize@meta.data$kras_genotype)
 
-##Visualizing Integrated Objects
-hgd()
-hgd_browse()
 ##Analyzing and Visualizing datasets from DE, DA analyses
 #0. Basic UMAP plots
 #ready_to_visualize$kras_genotype <- factor(ready_to_visualize$kras_genotype, levels = c("Wild_type", "Mutant"))
@@ -270,18 +268,18 @@ cols <- c('#8936EF','#F2CA19','#FF00BD','#E11845','#0057E9','#87E911')
 #Clu 3 – Wnt7b+ 
 #Clu 4 – Proliferating (Ki67, Stmn1)
 #Clu 5 – Pit (Tff1, Gkn1)
-mylevel <- c("Lgr5+", "SPEM","Neck","Proliferating","Pre-Pit","Pit", "Wnt7+")
-Idents(RZ.RZK) <- ready_to_visualize@meta.data$clusters
-Idents(RZ.RZK) <- factor(Idents(RZ.RZK), levels= mylevel)
+mylevel <- c("Lgr5+", "SPEM","Neck","Proliferating","Pit", "Wnt7+")
+Idents(ready_to_visualize) <- ready_to_visualize@meta.data$integrated_snn_res.0.3
+Idents(ready_to_visualize) <- factor(Idents(ready_to_visualize), levels= mylevel)
 #my_cols <- c('Neck'='#8936EF','Lgr5+'='#F2CA19','SPEM'='#FF00BD','Wnt7+'='#E11845','Proliferating'='#0057E9','Pit'='#87E911')
 my_cols <- c('0'='#8936EF','1'='#F2CA19','2'='#FF00BD','3'='#E11845','4'='#0057E9','5'='#87E911')
 p_0a <- visualize_umap_integrated(ready_to_visualize)
 p_0a1 <- visualize_umap_integrated(ready_to_visualize)
 
 #### DEG for fig 7, S7
-DEG <- FindMarkers(RZ.RZK, group.by = "kras_genotype", ident.1 = "Wild_type", test.use = "MAST")
-write.csv(DEG,"/vol/RZRZK/output/RZRZK_DEG_scMAST.csv")
-DEG <- read.csv("/vol/RZRZK/output/RZRZK_DEG_scMAST.csv")
+DEG <- FindMarkers(ready_to_visualize, group.by = "kras_genotype", ident.1 = "Mutant", test.use = "MAST")
+write.csv(DEG,"/data/snMultiomics/RZRZK_DEG_scMAST.csv")
+DEG <- read.csv("/data/snMultiomics/RZRZK_DEG_scMAST.csv")
 
 temp.deg<- DEG[DEG$p_val_adj < 0.01 & DEG$avg_log2FC > 1,]
 
@@ -298,5 +296,4 @@ temp_sc_2 <- gconvert(query = temp.deg$X, organism = "hsapiens", target = "ENSG"
 length(temp_sc_2$name) # 512 genes in RZ vs RZK DEGs
 intersect(temp_sc_2$name, kras_signaling) # 33 intersect gene list
 
-save.image(file="RZ_RZK_object_v20220216.RData")
-
+save.image(file="/data/snMultiomics/RZ_RZK_object_v20250701.RData")
