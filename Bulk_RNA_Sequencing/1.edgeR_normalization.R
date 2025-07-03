@@ -1,13 +1,5 @@
 library(magrittr)
-library(ggplot2)
-library(pheatmap)
-library(biomaRt)
-library(dplyr)
-library(readr)
-library(tibble)
 library(edgeR)
-library(GSEABase)
-library(GSVAdata)
 library(tximport)
 
 tx2gene_data = as.data.frame(read.csv("./0_result/star_salmon/salmon_tx2gene.tsv",sep="\t"))
@@ -43,4 +35,4 @@ y <- scaleOffset(y, normMat)
 
 cpms <- edgeR::cpm(y, offset = y$offset, log = FALSE)
 
-write.csv(cpms, "00250508_tmm_normalized_counts_all_sample_final.csv")
+write.csv(cpms, "tmm_normalized_counts_all_sample_final.csv")
